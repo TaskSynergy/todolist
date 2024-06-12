@@ -1,8 +1,11 @@
+require('dotenv').config();
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var { Pool } = require('pg');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -26,6 +29,37 @@ app.use('/users', usersRouter);
 app.use(function(req, res, next) {
   next(createError(404));
 });
+
+// postgres setup
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_DATABASE,
+  password: process.env.DB_PASSWORD,
+  port: 5432,
+});
+
+// Function to test PostgreSQL connection
+const testDbConnection = async () => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT NOW()');
+    console.log('Database connected:', result.rows[0]);
+    client.release();
+  } catch (err) {
+    console.error('Database connection error:', err);
+    process.exit(1); // Exit the process with an error code
+  }
+};
+
+// Test database connection on startup
+testDbConnection().then(() => {
+  // Start the Express server
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+});
+
 
 // error handler
 app.use(function(err, req, res, next) {
