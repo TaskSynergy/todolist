@@ -5,7 +5,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var { Pool } = require('pg');
+
+const sequelize = require('./models');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -31,34 +32,14 @@ app.use(function(req, res, next) {
   next(createError(404));
 });
 
-// postgres setup
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_DATABASE,
-  password: process.env.DB_PASSWORD,
-  port: 5432,
-});
-
-// Function to test PostgreSQL connection
-const testDbConnection = async () => {
-  try {
-    const client = await pool.connect();
-    const result = await client.query('SELECT NOW()');
-    console.log('Database connected:', result.rows[0]);
-    client.release();
-  } catch (err) {
-    console.error('Database connection error:', err);
-    process.exit(1); // Exit the process with an error code
-  }
-};
-
-// Test database connection on startup
-testDbConnection().then(() => {
-  // Start the Express server
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+// Sync database
+sequelize.sync({ force: false }) // force: true will drop the table if it already exists
+  .then(() => {
+    console.log('Database & tables created!');
   });
+
+app.listen(port, () => {
+  console.log(`App running on http://localhost:${port}`);
 });
 
 
