@@ -2,7 +2,6 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('./index'); // Import sequelize instance
 
 const User = sequelize.define('User', {
-  // Define attributes
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -22,7 +21,6 @@ const User = sequelize.define('User', {
     allowNull: false,
   },
 }, {
-  // Other model options
   timestamps: true, // Enable timestamps
   createdAt: 'created_at', // Customize the name of the createdAt field
   updatedAt: 'updated_at', // Customize the name of the updatedAt field
